@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <header>
+        <h1>Bienvenido: {{account}}</h1>
+        <h2>Su saldo: {{balance}}</h2>
+    </header>
+
+    <hr>
+    
+    <main>
+        <form action="deposit" method="post">
+            <label for="amount">Cantidad: </label>
+            <input name="amount" type="number" step="0.01">
+
+            <input name="account" type="hidden" value="{{account}}">
+
+            <button>Deposita</button>
+
+            {% if message and action == "1" %}
+                <p>{{ message }}</p>
+            {% endif %}
+        </form>
+        
+        <hr>
+
+        <form action="withdrawal" method="post">
+            <label for="amount">Cantidad: </label>
+            <input name="amount" type="number" step="0.01">
+            
+            <input name="account" type="hidden" value="{{account}}">
+            
+            <button>Retira</button>
+
+            {% if message and action == "2" %}
+                <p>{{ message }}</p>
+            {% endif %}
+        </form>
+        
+        <hr>
+
+        <form action="transfer" method="post">
+            <label for="destiny">Cuenta Destino: </label>
+            <input name="destiny">
+            
+            <br>
+            <br>
+
+            <label for="amount">Cantidad: </label>
+            <input name="amount" type="number" step="0.01">
+            
+            <input name="origin" type="hidden" value="{{account}}">
+            
+            <br>
+            <br>
+
+            <button>Transfiere</button>
+
+            {% if message and action == "3" %}
+                <p>{{ message }}</p>
+            {% endif %}
+        </form>
+    </main>
+</body>
+
+</html>

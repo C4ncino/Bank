@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Ingresa</title>
+</head>
+
+<body>
+    <div class="main-container">
+        <header>
+            <h1>Este es el Mejor Banco del Mundo</h1>
+        </header>
+
+        <main>
+            <form method="post" action="login">
+                <label for="account">Account: </label>
+                <input type="text" name="account">
+
+                <button>Ingresar</button>
+            </form>
+            <form method="get" action="/new_account">
+                <p>No tiene cuenta?</p>
+                <button>Crear cuenta</button>
+            </form>
+        </main>
+
+        <footer style="
+        margin: 3rem 0;
+        ">
+            Hecho con Amor
+        </footer>
+    </div>
+</body>
+
+</html>
