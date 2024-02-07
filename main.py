@@ -1,5 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
-from random import randint as ri
+from flask import Flask, render_template, request, redirect, url_for, jsonify, abort
 from bank import Bank
 
 app = Flask(__name__)
@@ -11,18 +10,32 @@ def index():
 
 @app.route('/login', methods=['POST'])
 def login():
-    account = request.form['account']
-    
-    if bank.search_account(account):
-        return redirect(url_for('menu', account = account, message = "", action = 0))    
+    if request.json:
+        if request.json['account'] != '':
+
+            if bank.search_account(request.json['account']):
+                account_item = bank.get_account(request.json['account'])
+                
+                return jsonify({
+                    'account' : account_item.get_account(), 
+                    'balance': account_item.get_balance()
+                }), 201
+            
+            return jsonify({'error' : "Account Does not exists"})
         
-    return render_template('not_valid.html')
+        else:
+            abort(404)
+    else:
+        abort(404)
 
 @app.route('/new_account', methods=['GET'])
 def new_account():
     account = bank.add_account()
-    
-    return redirect(url_for('menu', account = account, message = "", action = 0))
+
+    return jsonify({
+        'account' : account.get_account(), 
+        'balance': account.get_balance()
+    })
 
 @app.route('/menu', methods=['GET'])
 def menu():
@@ -35,41 +48,89 @@ def menu():
 
 @app.route('/deposit', methods=['POST'])
 def deposit():
-    account = request.form['account']
-    amount = int(request.form['amount'])
+    if request.json:
+        if request.json['account'] != '' and request.json['amount'] != '':
 
-    item_account = bank.get_account(account)
-    item_account.deposit(amount)
+            account = request.json['account']
+            amount = int(request.json['amount'])
 
-    message = "Depósito Realizado"
-    
-    return redirect(url_for('menu', account = account, message = message, action = 1))
-
+            if bank.search_account(account):
+                account_item = bank.get_account(account)
+                account_item.deposit(amount)
+                
+                return jsonify({
+                    'account' : account_item.get_account(), 
+                    'balance': account_item.get_balance(),
+                    'message': 'Depósito Realizado',
+                    'action': 1
+                })
+            
+            abort(404)
+        
+        else:
+            abort(404)
+    else:
+        abort(404)
 
 @app.route('/withdrawal', methods=['POST'])
 def withdrawal():
-    account = request.form['account']
-    amount = int(request.form['amount'])
-    message = ""
+    if request.json:
+        if request.json['account'] != '' and request.json['amount'] != '':
 
-    item_account = bank.get_account(account)
+            account = request.json['account']
+            amount = int(request.json['amount'])
 
-    if not item_account.whitdrawal(amount): 
-        message = "No tienes tanto Pa, retira menos, No te endeudes"
-    
-    return redirect(url_for('menu', account = account, message = message, action = 2))
+            if bank.search_account(account):
+                account_item = bank.get_account(account)
+                message = ""
+            
+                if not account_item.whitdrawal(amount): 
+                    message = "No tienes tanto Pa, retira menos, No te endeudes"
+                
+                return jsonify({
+                    'account' : account_item.get_account(), 
+                    'balance': account_item.get_balance(),
+                    'message': message,
+                    'action': 2
+                })    
+            
+            abort(404)
+        
+        else:
+            abort(404)
+    else:
+        abort(404)
 
 @app.route('/transfer', methods=['POST'])
 def transfer():
-    origin = request.form['origin']
-    destiny = request.form['destiny']
-    amount = int(request.form['amount'])
-    message = ""
-    
-    if not bank.transfer(origin, destiny, amount):
-        message = "La cuenta destino no existe Pa"
-    
-    return redirect(url_for('menu', account = origin, message = message, action = 3))
+    if request.json:
+        if request.json['origin'] != '' and request.json['amount'] != '' and request.json['destiny']:
+
+            origin = request.json['origin']
+            destiny = request.json['destiny']
+            amount = int(request.json['amount'])
+
+            if bank.search_account(origin):
+                account_item = bank.get_account(origin)
+                message = ""
+            
+                if not bank.transfer(origin, destiny, amount):
+                    message = "La cuenta destino no existe Pa o No tienes tanto"
+
+                
+                return jsonify({
+                    'account' : account_item.get_account(), 
+                    'balance': account_item.get_balance(),
+                    'message': message,
+                    'action': 3
+                })    
+            
+            abort(404)
+        
+        else:
+            abort(404)
+    else:
+        abort(404)
 
 
 if __name__ == '__main__':
