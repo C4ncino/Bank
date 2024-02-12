@@ -1,9 +1,16 @@
+from random import randint
 from account import Account
+from database import DB
 
 class Bank:
     def __init__(self) -> None:
         self.accounts = {}
-        self.movements = []
+
+        self.db = DB()
+        db_accounts = self.db.get_accounts()
+
+        for account in db_accounts:
+            self.accounts[account[0]] = Account(account[0], account[1], self.db)
 
     
     def search_account(self, account) -> bool:
@@ -17,9 +24,18 @@ class Bank:
     
     def get_account(self, account) -> Account:
         return self.accounts[account]
+    
+    def get_accounts(self):
+        return self.accounts
 
     def add_account(self) -> Account:
-        account = Account()
+        accountN = ""
+        for i in range(5):
+            accountN += str(randint(0,9))
+
+        account = Account(accountN, 0, self.db)
+        self.db.add_account(accountN)
+
         self.accounts[account.get_account()] = account
 
         return account
