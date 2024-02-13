@@ -1,9 +1,16 @@
 from flask import Flask, render_template, request, jsonify, abort
 from flask_cors import CORS
 from bank import Bank
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+import os
+from load_dotenv import load_dotenv
 
+load_dotenv()
 app = Flask(__name__)
 CORS(app)
+
+#  JWT Config
+app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
 
 bank = Bank()
 
@@ -11,12 +18,17 @@ bank = Bank()
 def index():
     return render_template('index.html')
 
+@app.rout('/auth', methods=['POST'])
+def auth():
+    # username = 
+    pass
+
 @app.route('/login', methods=['POST'])
 def login():
     if request.json:
         if request.json.get('account') != '':
             account = request.json['account']
-            
+
             if bank.search_account(account):
                 account_item = bank.get_account(account)
                 
