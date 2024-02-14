@@ -8,20 +8,33 @@ from load_dotenv import load_dotenv
 load_dotenv()
 app = Flask(__name__)
 CORS(app)
+JWTManager(app)
 
 #  JWT Config
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
 
 bank = Bank()
 
+# def validate():
+#     return True
+
 @app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
 
-@app.rout('/auth', methods=['POST'])
-def auth():
-    # username = 
-    pass
+# @app.rout('/auth', methods=['POST'])
+# def auth():
+#     username = request.json.get('username')
+#     password = request.json.get('password')
+
+#     if validate(username, password):
+#         access_token = create_access_token(identity=username)
+        
+#         return jsonify({
+#             'token': access_token
+#         })
+
+#     return jsonify({'message': 'Credenciales Incorrectas' }), 401
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -31,11 +44,14 @@ def login():
 
             if bank.search_account(account):
                 account_item = bank.get_account(account)
+
+                access_token = create_access_token(identity=account)
                 
                 return jsonify({
                     'account' : account_item.get_account(), 
                     'balance': account_item.get_balance(),
-                    'success': True
+                    'success': True,
+                    'token': access_token
                 })
             
             abort(404)
@@ -43,15 +59,6 @@ def login():
             abort(404)
     else:
         abort(404)
-
-@app.route('/new_account', methods=['GET'])
-def new_account():
-    account = bank.add_account()
-
-    return jsonify({
-        'account' : account.get_account(), 
-        'balance': account.get_balance()
-    })
 
 @app.route('/get_accounts', methods=['GET'])
 def menu():
@@ -66,9 +73,18 @@ def menu():
         )
 
     return jsonify({'accounts': accounts})
-    
+
+@app.route('/new_account', methods=['GET'])
+def new_account():
+    account = bank.add_account()
+
+    return jsonify({
+        'account' : account.get_account(), 
+        'balance': account.get_balance()
+    }) 
 
 @app.route('/deposit', methods=['POST'])
+@jwt_required()
 def deposit():
     if request.json:
         if request.json.get('account') != '' and request.json.get('amount'):
@@ -95,6 +111,7 @@ def deposit():
         abort(404)
 
 @app.route('/withdrawal', methods=['POST'])
+@jwt_required()
 def withdrawal():
     if request.json:
         if request.json.get('account') != '' and request.json.get('amount'):
@@ -126,6 +143,7 @@ def withdrawal():
         abort(404)
 
 @app.route('/transfer', methods=['POST'])
+@jwt_required()
 def transfer():
     if request.json:
         if request.json.get('origin') != '' and request.json.get('amount') and request.json.get('destiny') != '':
